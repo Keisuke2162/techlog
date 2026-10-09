@@ -2,13 +2,22 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { format, parseISO } from 'date-fns';
 import { ja } from 'date-fns/locale';
-import { Plus } from 'lucide-react';
+import { Plus, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/shared/ui/button';
+import { Input } from '@/shared/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Heatmap } from './heatmap';
-import { useAllLogs, useArticles, useLogsByDate } from '@/features/articles/ui/hooks';
+import {
+  useAddArticle,
+  useAllLogs,
+  useArticles,
+  useLogsByDate,
+} from '@/features/articles/ui/hooks';
+import { DuplicateUrlError } from '@/features/articles/application/usecases';
 import { buildCalendarGrid } from '../domain/aggregate';
 import { TagChip } from '@/features/tags/ui/tag-chip';
 import { useTags } from '@/features/tags/ui/hooks';
@@ -76,8 +85,126 @@ export function DashboardPage() {
         tags={tags.data ?? []}
         emptyText="読んでいる記事はありません"
       />
+
+      <QuickAdd />
     </div>
   );
+}
+
+function QuickAdd() {
+  const [url, setUrl] = React.useState('');
+  const [submitting, setSubmitting] = React.useState(false);
+  const add = useAddArticle();
+  const router = useRouter();
+
+  const canSubmit = isHttpUrl(url.trim()) && !submitting;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const value = url.trim();
+    if (!isHttpUrl(value)) {
+      toast.error('http(s) で始まる URL を入力してください');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const { title, siteName } = await resolveTitle(value);
+      const article = await add.mutateAsync({
+        url: value,
+        title,
+        siteName,
+        status: 'want',
+      });
+      setUrl('');
+      toast.success('「まだ」に追加しました', {
+        action: {
+          label: '開く',
+          onClick: () => router.push(`/articles/${article.id}`),
+        },
+      });
+    } catch (err) {
+      if (err instanceof DuplicateUrlError) {
+        const id = err.existing.id;
+        toast.error('この URL は既に登録されています', {
+          action: {
+            label: '開く',
+            onClick: () => router.push(`/articles/${id}`),
+          },
+        });
+      } else {
+        toast.error(err instanceof Error ? err.message : '追加に失敗しました');
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-sm font-medium">URL から「まだ」に追加</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-2 sm:flex-row">
+          <div className="relative flex-1">
+            <Input
+              type="url"
+              inputMode="url"
+              placeholder="https://..."
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              aria-label="追加する記事の URL"
+              disabled={submitting}
+            />
+            {submitting ? (
+              <Loader2
+                aria-hidden
+                className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 animate-spin"
+              />
+            ) : null}
+          </div>
+          <Button type="submit" disabled={!canSubmit}>
+            <Plus className="h-4 w-4" aria-hidden /> 追加
+          </Button>
+        </form>
+        <p className="text-muted-foreground mt-2 text-xs">タイトルは URL から自動で取得します。</p>
+      </CardContent>
+    </Card>
+  );
+}
+
+function isHttpUrl(input: string): boolean {
+  try {
+    const u = new URL(input);
+    return u.protocol === 'http:' || u.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+async function resolveTitle(url: string): Promise<{ title: string; siteName?: string }> {
+  try {
+    const res = await fetch(`/api/fetch-title?url=${encodeURIComponent(url)}`);
+    if (res.ok) {
+      const data = (await res.json()) as { title?: string; siteName?: string };
+      if (data.title && data.title.trim()) {
+        return { title: data.title.trim(), siteName: data.siteName?.trim() || undefined };
+      }
+    }
+  } catch {
+    /* ignore and fall back */
+  }
+  return { title: fallbackTitleFromUrl(url) };
+}
+
+function fallbackTitleFromUrl(url: string): string {
+  try {
+    const u = new URL(url);
+    const path = u.pathname.replace(/\/$/, '');
+    return path ? `${u.host}${path}` : u.host;
+  } catch {
+    return url;
+  }
 }
 
 function Stat({
