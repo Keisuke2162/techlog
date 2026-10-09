@@ -12,15 +12,21 @@ import { useAllLogs, useArticles, useLogsByDate } from '@/features/articles/ui/h
 import { buildCalendarGrid } from '../domain/aggregate';
 import { TagChip } from '@/features/tags/ui/tag-chip';
 import { useTags } from '@/features/tags/ui/hooks';
-import type { Article, Tag } from '@/features/articles/domain/types';
+import type { Article, ArticleStatus, ReadingLog, Tag } from '@/features/articles/domain/types';
 
 export function DashboardPage() {
   const logs = useAllLogs();
   const reading = useArticles({ status: 'reading' }, 'lastReadAt');
-  const recent = useArticles({ status: 'all' }, 'addedAt');
+  const all = useArticles({ status: 'all' }, 'addedAt');
   const tags = useTags();
   const [selectedDate, setSelectedDate] = React.useState<string | null>(null);
   const yearly = React.useMemo(() => buildCalendarGrid(logs.data ?? []), [logs.data]);
+
+  const monthlyRead = React.useMemo(
+    () => countUniqueArticlesThisMonth(logs.data ?? []),
+    [logs.data],
+  );
+  const statusCounts = React.useMemo(() => countByStatus(all.data ?? []), [all.data]);
 
   return (
     <div className="space-y-6">
@@ -32,6 +38,18 @@ export function DashboardPage() {
           </Link>
         </Button>
       </header>
+
+      <section aria-label="サマリ" className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <Stat label="今月" value={monthlyRead} unit="本" />
+        <Stat label="読んだ" value={statusCounts.done} unit="本" href="/articles?status=done" />
+        <Stat
+          label="読んでる"
+          value={statusCounts.reading}
+          unit="本"
+          href="/articles?status=reading"
+        />
+        <Stat label="まだ" value={statusCounts.want} unit="本" href="/articles?status=want" />
+      </section>
 
       <Card>
         <CardHeader className="flex flex-row items-baseline justify-between gap-4">
@@ -51,24 +69,66 @@ export function DashboardPage() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <ArticleListPreview
-          title="読んでる途中"
-          href="/articles?status=reading"
-          articles={(reading.data ?? []).slice(0, 5)}
-          tags={tags.data ?? []}
-          emptyText="読んでいる記事はありません"
-        />
-        <ArticleListPreview
-          title="最近追加"
-          href="/articles"
-          articles={(recent.data ?? []).slice(0, 5)}
-          tags={tags.data ?? []}
-          emptyText="まだ記事がありません"
-        />
-      </div>
+      <ArticleListPreview
+        title="読んでる途中"
+        href="/articles?status=reading"
+        articles={(reading.data ?? []).slice(0, 5)}
+        tags={tags.data ?? []}
+        emptyText="読んでいる記事はありません"
+      />
     </div>
   );
+}
+
+function Stat({
+  label,
+  value,
+  unit,
+  href,
+}: {
+  label: string;
+  value: number;
+  unit?: string;
+  href?: string;
+}) {
+  const body = (
+    <>
+      <p className="text-muted-foreground text-xs">{label}</p>
+      <p className="mt-1 flex items-baseline gap-1">
+        <span className="font-mono text-2xl font-semibold tracking-tight tabular-nums">
+          {value}
+        </span>
+        {unit ? <span className="text-muted-foreground text-xs">{unit}</span> : null}
+      </p>
+    </>
+  );
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className="hover:border-primary/40 focus-visible:ring-ring border-border/70 bg-card block rounded-lg border p-4 transition-colors focus-visible:ring-2 focus-visible:outline-none"
+      >
+        {body}
+      </Link>
+    );
+  }
+  return <div className="border-border/70 bg-card rounded-lg border p-4">{body}</div>;
+}
+
+function countUniqueArticlesThisMonth(logs: readonly ReadingLog[]): number {
+  const now = new Date();
+  const prefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const ids = new Set<string>();
+  for (const log of logs) {
+    if (log.readOn.startsWith(prefix)) ids.add(log.articleId);
+  }
+  return ids.size;
+}
+
+function countByStatus(articles: readonly Article[]): Record<ArticleStatus, number> {
+  const counts: Record<ArticleStatus, number> = { want: 0, reading: 0, done: 0 };
+  for (const a of articles) counts[a.status] += 1;
+  return counts;
 }
 
 function DayDetails({ date, tags }: { date: string; tags: Tag[] }) {
