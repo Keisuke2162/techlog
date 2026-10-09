@@ -3,110 +3,85 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ---------------------------------------------------------------------------
-   TechLog — "Warm Study Journal" palette
-   Light: paper cream + ink; warm amber primary (reading flame)
-   Dark : deep ink + cream accents; luminous amber primary
+   TechLog — pale, tool-like palette
+   Light: soft off-white, muted periwinkle primary, cool neutrals
+   Dark : muted ink, luminous but low-saturation accents
 --------------------------------------------------------------------------- */
 :root {
-  /* Surface — paper-like warm neutrals */
-  --background: 36 38% 97%;
-  --surface: 36 42% 94%;
-  --foreground: 220 25% 14%;
+  --background: 220 24% 98%;
+  --surface: 220 20% 96%;
+  --foreground: 222 20% 20%;
 
   --card: 0 0% 100%;
-  --card-foreground: 220 25% 14%;
+  --card-foreground: 222 20% 20%;
   --popover: 0 0% 100%;
-  --popover-foreground: 220 25% 14%;
+  --popover-foreground: 222 20% 20%;
 
-  /* Primary — warm amber "reading flame" */
-  --primary: 24 92% 54%;
-  --primary-foreground: 36 42% 98%;
-  --primary-soft: 32 100% 92%;
+  --primary: 222 50% 62%;
+  --primary-foreground: 220 24% 99%;
+  --primary-soft: 222 60% 94%;
 
-  /* Secondary / accent — deep ink */
-  --secondary: 220 22% 94%;
-  --secondary-foreground: 220 30% 18%;
+  --secondary: 220 18% 94%;
+  --secondary-foreground: 222 20% 24%;
 
-  --muted: 36 24% 92%;
-  --muted-foreground: 220 12% 42%;
+  --muted: 220 18% 95%;
+  --muted-foreground: 222 10% 46%;
 
-  --accent: 32 100% 92%;
-  --accent-foreground: 24 70% 32%;
+  --accent: 222 50% 95%;
+  --accent-foreground: 222 40% 32%;
 
-  --destructive: 0 72% 51%;
-  --destructive-foreground: 36 42% 98%;
+  --destructive: 0 60% 55%;
+  --destructive-foreground: 220 24% 99%;
 
-  --border: 32 22% 86%;
-  --input: 32 22% 86%;
-  --ring: 24 92% 54%;
+  --border: 220 14% 90%;
+  --input: 220 14% 90%;
+  --ring: 222 50% 62%;
 
-  --radius: 0.875rem;
+  --radius: 0.625rem;
 
-  /* Heatmap — amber ramp (matches primary) */
-  --heatmap-0: 36 28% 90%;
-  --heatmap-1: 36 90% 82%;
-  --heatmap-2: 28 92% 66%;
-  --heatmap-3: 22 90% 54%;
-  --heatmap-4: 18 88% 42%;
-
-  /* Gradients */
-  --gradient-flame: linear-gradient(135deg, hsl(32 100% 60%), hsl(14 92% 56%));
-  --gradient-ink: linear-gradient(135deg, hsl(220 60% 24%), hsl(220 40% 36%));
-  --gradient-sky: linear-gradient(135deg, hsl(200 80% 56%), hsl(260 70% 60%));
-  --gradient-leaf: linear-gradient(135deg, hsl(150 60% 42%), hsl(180 60% 42%));
-
-  /* Shadows */
-  --shadow-xs: 0 1px 2px hsl(24 40% 20% / 0.04);
-  --shadow-sm: 0 1px 2px hsl(24 40% 20% / 0.05), 0 1px 3px hsl(24 40% 20% / 0.06);
-  --shadow-md: 0 4px 10px -2px hsl(24 40% 20% / 0.08), 0 2px 4px -2px hsl(24 40% 20% / 0.06);
-  --shadow-lg: 0 14px 32px -8px hsl(24 40% 20% / 0.12), 0 4px 8px -2px hsl(24 40% 20% / 0.06);
+  /* Heatmap — gentle periwinkle ramp */
+  --heatmap-0: 220 16% 93%;
+  --heatmap-1: 222 55% 86%;
+  --heatmap-2: 222 55% 74%;
+  --heatmap-3: 222 50% 62%;
+  --heatmap-4: 222 50% 48%;
 }
 
 .dark {
-  --background: 224 32% 7%;
-  --surface: 224 30% 10%;
-  --foreground: 36 32% 94%;
+  --background: 222 20% 10%;
+  --surface: 222 18% 13%;
+  --foreground: 220 15% 90%;
 
-  --card: 224 28% 11%;
-  --card-foreground: 36 32% 94%;
-  --popover: 224 28% 11%;
-  --popover-foreground: 36 32% 94%;
+  --card: 222 18% 13%;
+  --card-foreground: 220 15% 90%;
+  --popover: 222 18% 13%;
+  --popover-foreground: 220 15% 90%;
 
-  --primary: 28 96% 60%;
-  --primary-foreground: 220 30% 10%;
-  --primary-soft: 24 60% 20%;
+  --primary: 222 55% 70%;
+  --primary-foreground: 222 25% 12%;
+  --primary-soft: 222 35% 22%;
 
-  --secondary: 224 20% 18%;
-  --secondary-foreground: 36 30% 92%;
+  --secondary: 222 15% 20%;
+  --secondary-foreground: 220 15% 90%;
 
-  --muted: 224 20% 16%;
-  --muted-foreground: 220 10% 65%;
+  --muted: 222 15% 18%;
+  --muted-foreground: 220 10% 62%;
 
-  --accent: 24 50% 22%;
-  --accent-foreground: 32 100% 82%;
+  --accent: 222 25% 22%;
+  --accent-foreground: 222 55% 80%;
 
-  --destructive: 0 70% 55%;
-  --destructive-foreground: 36 42% 98%;
+  --destructive: 0 55% 55%;
+  --destructive-foreground: 220 24% 99%;
 
-  --border: 224 20% 22%;
-  --input: 224 20% 22%;
-  --ring: 28 96% 60%;
+  --border: 222 15% 22%;
+  --input: 222 15% 22%;
+  --ring: 222 55% 70%;
 
-  --heatmap-0: 224 20% 18%;
-  --heatmap-1: 24 50% 30%;
-  --heatmap-2: 24 70% 42%;
-  --heatmap-3: 20 85% 52%;
-  --heatmap-4: 16 90% 62%;
-
-  --gradient-flame: linear-gradient(135deg, hsl(32 100% 64%), hsl(14 92% 58%));
-  --gradient-ink: linear-gradient(135deg, hsl(36 32% 94%), hsl(220 20% 72%));
-  --gradient-sky: linear-gradient(135deg, hsl(200 80% 62%), hsl(260 70% 68%));
-  --gradient-leaf: linear-gradient(135deg, hsl(150 55% 52%), hsl(180 55% 52%));
-
-  --shadow-xs: 0 1px 2px hsl(0 0% 0% / 0.4);
-  --shadow-sm: 0 1px 2px hsl(0 0% 0% / 0.4), 0 1px 3px hsl(0 0% 0% / 0.3);
-  --shadow-md: 0 4px 10px -2px hsl(0 0% 0% / 0.5), 0 2px 4px -2px hsl(0 0% 0% / 0.4);
-  --shadow-lg: 0 14px 32px -8px hsl(0 0% 0% / 0.6), 0 4px 8px -2px hsl(0 0% 0% / 0.4);
+  --heatmap-0: 222 15% 20%;
+  --heatmap-1: 222 35% 32%;
+  --heatmap-2: 222 45% 44%;
+  --heatmap-3: 222 55% 58%;
+  --heatmap-4: 222 65% 72%;
 }
 
 @theme inline {
@@ -137,24 +112,14 @@
   --color-heatmap-3: hsl(var(--heatmap-3));
   --color-heatmap-4: hsl(var(--heatmap-4));
 
-  --radius-xs: calc(var(--radius) - 6px);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 10px);
-
-  --shadow-xs: var(--shadow-xs);
-  --shadow-sm: var(--shadow-sm);
-  --shadow-md: var(--shadow-md);
-  --shadow-lg: var(--shadow-lg);
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 6px);
 
   --font-sans:
     var(--font-inter), var(--font-noto-sans-jp), ui-sans-serif, system-ui, -apple-system,
     'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-  --font-display:
-    var(--font-instrument-serif), var(--font-noto-sans-jp), 'Hiragino Mincho ProN', 'Yu Mincho',
-    serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, 'SFMono-Regular', Menlo, monospace;
 }
 
@@ -171,29 +136,14 @@
 
   body {
     font-family: var(--font-sans);
-    font-feature-settings:
-      'palt' 1,
-      'cv11' 1,
-      'ss01' 1;
+    font-feature-settings: 'palt' 1;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     letter-spacing: -0.005em;
-
-    /* Subtle warm paper background with soft radial glows */
-    background-image:
-      radial-gradient(ellipse 90% 50% at 50% -10%, hsl(var(--primary) / 0.08), transparent 60%),
-      radial-gradient(ellipse 60% 40% at 100% 100%, hsl(220 60% 50% / 0.05), transparent 60%);
-    background-attachment: fixed;
-  }
-
-  .dark body {
-    background-image:
-      radial-gradient(ellipse 90% 50% at 50% -10%, hsl(var(--primary) / 0.14), transparent 60%),
-      radial-gradient(ellipse 60% 40% at 100% 100%, hsl(220 80% 50% / 0.08), transparent 60%);
   }
 
   ::selection {
-    background-color: hsl(var(--primary) / 0.25);
+    background-color: hsl(var(--primary) / 0.2);
     color: hsl(var(--foreground));
   }
 
@@ -201,99 +151,11 @@
   h2,
   h3,
   h4 {
-    letter-spacing: -0.02em;
+    letter-spacing: -0.015em;
   }
 }
 
 @layer utilities {
-  /* Elegant display typography */
-  .font-display {
-    font-family: var(--font-display);
-    font-weight: 400;
-    letter-spacing: -0.015em;
-  }
-
-  /* Gradient text helpers */
-  .text-gradient-flame {
-    background-image: var(--gradient-flame);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-  .text-gradient-ink {
-    background-image: var(--gradient-ink);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-  .text-gradient-sky {
-    background-image: var(--gradient-sky);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-  .text-gradient-leaf {
-    background-image: var(--gradient-leaf);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-
-  .bg-gradient-flame {
-    background-image: var(--gradient-flame);
-  }
-  .bg-gradient-ink {
-    background-image: var(--gradient-ink);
-  }
-  .bg-gradient-sky {
-    background-image: var(--gradient-sky);
-  }
-  .bg-gradient-leaf {
-    background-image: var(--gradient-leaf);
-  }
-
-  /* Soft paper card: tactile depth that beats plain shadcn */
-  .card-paper {
-    background-color: hsl(var(--card));
-    border: 1px solid hsl(var(--border));
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-    transition:
-      box-shadow 180ms ease,
-      transform 180ms ease,
-      border-color 180ms ease;
-  }
-  .card-paper:hover {
-    box-shadow: var(--shadow-md);
-  }
-
-  /* Pretty focus ring that matches the warm palette */
-  .focus-ring {
-    outline: 2px solid transparent;
-    outline-offset: 2px;
-  }
-  .focus-ring:focus-visible {
-    outline-color: hsl(var(--ring));
-  }
-
-  /* Thin dotted "notebook" divider */
-  .divider-dot {
-    background-image: radial-gradient(circle, hsl(var(--border)) 1px, transparent 1px);
-    background-size: 8px 8px;
-    background-repeat: repeat-x;
-    background-position: center;
-    height: 8px;
-  }
-
-  /* Fine grid for the hero area */
-  .bg-grid-soft {
-    background-image:
-      linear-gradient(to right, hsl(var(--border) / 0.5) 1px, transparent 1px),
-      linear-gradient(to bottom, hsl(var(--border) / 0.5) 1px, transparent 1px);
-    background-size: 32px 32px;
-    mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
-  }
-
   /* Thin scrollbar used by the heatmap */
   .scrollbar-thin::-webkit-scrollbar {
     height: 6px;
@@ -304,6 +166,6 @@
     border-radius: 4px;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground) / 0.5);
+    background: hsl(var(--muted-foreground) / 0.4);
   }
 }

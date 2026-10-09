@@ -86,12 +86,9 @@ export function TagsPage() {
   const totalTags = tags.data?.length ?? 0;
   return (
     <div className="space-y-6">
-      <div className="space-y-1">
-        <p className="text-muted-foreground text-xs tracking-widest uppercase">Tags</p>
-        <h1 className="font-display text-4xl leading-tight tracking-tight sm:text-5xl">
-          色で分かる、<span className="text-gradient-flame italic">主題</span>
-        </h1>
-        <p className="text-muted-foreground text-sm">{totalTags} 個のタグ</p>
+      <div className="flex items-baseline gap-3">
+        <h1 className="text-xl font-semibold tracking-tight">タグ</h1>
+        <span className="text-muted-foreground font-mono text-xs tabular-nums">{totalTags}</span>
       </div>
 
       <Card>
@@ -126,7 +123,7 @@ export function TagsPage() {
           {tags.data.map((tag) => (
             <li
               key={tag.id}
-              className="group border-border/70 bg-card/70 hover:border-primary/40 flex flex-wrap items-center justify-between gap-2 rounded-xl border p-3 transition-all hover:shadow-sm"
+              className="border-border/70 bg-card flex flex-wrap items-center justify-between gap-2 rounded-md border p-3"
             >
               {editId === tag.id ? (
                 <div className="flex flex-1 flex-wrap items-center gap-2">

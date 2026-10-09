@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { ExternalLink, Trash2, CheckCircle2, Save } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
-import { Slider } from '@/shared/ui/slider';
 import { Input } from '@/shared/ui/input';
 import { Textarea } from '@/shared/ui/textarea';
 import { Label } from '@/shared/ui/label';
@@ -26,7 +25,6 @@ import {
   useLogsForArticle,
   useMarkReadToday,
   useUpdateArticle,
-  useUpdateProgress,
 } from './hooks';
 import { useRepository } from '@/shared/repository/context';
 import { useQueryClient } from '@tanstack/react-query';
@@ -44,7 +42,6 @@ export function ArticleDetail({ articleId }: { articleId: string }) {
   const router = useRouter();
   const articleQuery = useArticle(articleId);
   const tagsQuery = useTags();
-  const updateProgress = useUpdateProgress(articleId);
   const markRead = useMarkReadToday();
   const update = useUpdateArticle();
   const del = useDeleteArticle();
@@ -67,9 +64,7 @@ export function ArticleDetail({ articleId }: { articleId: string }) {
     <div className="space-y-6">
       <header className="space-y-2">
         <div className="flex flex-wrap items-start justify-between gap-2">
-          <h1 className="font-display text-3xl leading-tight tracking-tight sm:text-4xl">
-            {article.title}
-          </h1>
+          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">{article.title}</h1>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" asChild>
               <a href={article.url} target="_blank" rel="noreferrer">
@@ -93,9 +88,8 @@ export function ArticleDetail({ articleId }: { articleId: string }) {
         </p>
       </header>
 
-      <ProgressPanel
+      <StatusPanel
         article={article}
-        onProgress={(v) => updateProgress.mutate(v)}
         onStatus={(s) => update.mutate({ id: article.id, status: s })}
         onMarkRead={() => markRead.mutate(article.id)}
       />
@@ -138,82 +132,38 @@ export function ArticleDetail({ articleId }: { articleId: string }) {
   );
 }
 
-function ProgressPanel({
+function StatusPanel({
   article,
-  onProgress,
   onStatus,
   onMarkRead,
 }: {
   article: Article;
-  onProgress: (value: number) => void;
   onStatus: (status: ArticleStatus) => void;
   onMarkRead: () => void;
 }) {
-  const [localProgress, setLocalProgress] = React.useState(article.progress);
-  const [syncedProgress, setSyncedProgress] = React.useState(article.progress);
-  if (syncedProgress !== article.progress) {
-    setSyncedProgress(article.progress);
-    setLocalProgress(article.progress);
-  }
-
-  const commit = (value: number) => {
-    const clamped = Math.max(0, Math.min(100, Math.round(value)));
-    setLocalProgress(clamped);
-    onProgress(clamped);
-  };
-
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="text-base">進捗</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex items-center gap-4">
-          <Slider
-            value={[localProgress]}
-            onValueChange={(v) => setLocalProgress(v[0] ?? 0)}
-            onValueCommit={(v) => commit(v[0] ?? 0)}
-            min={0}
-            max={100}
-            step={5}
-            aria-label="進捗"
-            className="flex-1"
-          />
-          <Input
-            type="number"
-            min={0}
-            max={100}
-            step={1}
-            value={localProgress}
-            onChange={(e) => setLocalProgress(Number(e.target.value) || 0)}
-            onBlur={() => commit(localProgress)}
-            aria-label="進捗 (%)"
-            className="w-20 text-center"
-          />
-          <span className="text-muted-foreground text-sm">%</span>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Select value={article.status} onValueChange={(v) => onStatus(v as ArticleStatus)}>
-            <SelectTrigger className="w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {STATUS_ORDER.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {STATUS_LABEL[s]}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button variant="outline" onClick={onMarkRead}>
-            <CheckCircle2 className="h-4 w-4" aria-hidden /> 今日読んだ
-          </Button>
-          {article.finishedAt ? (
-            <span className="text-muted-foreground text-xs">
-              読了: {format(new Date(article.finishedAt), 'yyyy-MM-dd', { locale: ja })}
-            </span>
-          ) : null}
-        </div>
+      <CardContent className="flex flex-wrap items-center gap-2 pt-5">
+        <Select value={article.status} onValueChange={(v) => onStatus(v as ArticleStatus)}>
+          <SelectTrigger className="w-36">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {STATUS_ORDER.map((s) => (
+              <SelectItem key={s} value={s}>
+                {STATUS_LABEL[s]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button variant="outline" size="sm" onClick={onMarkRead}>
+          <CheckCircle2 className="h-4 w-4" aria-hidden /> 今日読んだ
+        </Button>
+        {article.finishedAt ? (
+          <span className="text-muted-foreground text-xs">
+            読了: {format(new Date(article.finishedAt), 'yyyy-MM-dd', { locale: ja })}
+          </span>
+        ) : null}
       </CardContent>
     </Card>
   );
@@ -332,11 +282,7 @@ function LogsPanel({ articleId }: { articleId: string }) {
                       className="w-40"
                       aria-label="読んだ日"
                     />
-                    <span className="text-muted-foreground font-mono text-xs">
-                      {log.progressFrom === log.progressTo
-                        ? '継続'
-                        : `${log.progressFrom}% → ${log.progressTo}%`}
-                    </span>
+                    <span className="text-muted-foreground font-mono text-xs">継続</span>
                   </div>
                   <Button
                     variant="ghost"

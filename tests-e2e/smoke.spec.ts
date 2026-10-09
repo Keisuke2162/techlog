@@ -120,8 +120,8 @@ test.describe('TechLog smoke', () => {
 
   test('dashboard renders and nav works', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: /今日もひとつ/ })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'ホーム' })).toBeVisible();
     await page.getByRole('link', { name: /^タグ/ }).first().click();
-    await expect(page.getByRole('heading', { name: 'タグ管理' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /^タグ/ })).toBeVisible();
   });
 });

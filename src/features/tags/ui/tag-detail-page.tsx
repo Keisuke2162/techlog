@@ -53,11 +53,12 @@ export function TagDetailPage({ tagId }: { tagId: string }) {
       <header className="flex flex-wrap items-start justify-between gap-2">
         <div className="flex flex-wrap items-center gap-3">
           <TagChip tag={tag} size="md" />
-          <h1 className="font-display text-3xl leading-tight tracking-tight sm:text-4xl">
-            {tag.name}{' '}
-            <span className="text-muted-foreground font-sans text-2xl font-medium">のまとめ</span>
+          <h1 className="text-xl font-semibold tracking-tight">
+            {tag.name} <span className="text-muted-foreground font-normal">のまとめ</span>
           </h1>
-          <span className="text-muted-foreground text-sm">({list.length} 件)</span>
+          <span className="text-muted-foreground font-mono text-xs tabular-nums">
+            {list.length}
+          </span>
         </div>
         <Button onClick={exportMarkdown} variant="outline">
           <Download className="h-4 w-4" aria-hidden />
