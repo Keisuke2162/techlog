@@ -64,72 +64,86 @@ export function ArticleList() {
     filters.sort,
   );
 
+  const totalCount = articles.data?.length ?? 0;
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-bold tracking-tight">記事</h1>
-        <Button asChild>
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div className="space-y-1">
+          <p className="text-muted-foreground text-xs tracking-widest uppercase">Library</p>
+          <h1 className="font-display text-4xl leading-tight tracking-tight sm:text-5xl">
+            あなたの<span className="text-gradient-flame italic">書棚</span>
+          </h1>
+          <p className="text-muted-foreground text-sm">
+            {articles.isLoading ? '読み込み中…' : `${totalCount} 本の記事`}
+          </p>
+        </div>
+        <Button asChild size="lg">
           <Link href="/articles/new">
             <Plus className="h-4 w-4" aria-hidden /> 新規追加
           </Link>
         </Button>
       </div>
 
-      <Tabs
-        value={filters.status}
-        onValueChange={(v) => setFilters({ status: v as ArticleStatus | 'all' })}
-      >
-        <TabsList>
-          {STATUS_TABS.map((t) => (
-            <TabsTrigger key={t.value} value={t.value}>
-              {t.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
-
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="relative flex-1">
-          <Search
-            aria-hidden
-            className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2"
-          />
-          <Input
-            value={filters.q}
-            onChange={(e) => setFilters({ q: e.target.value })}
-            placeholder="タイトル・URL・メモで検索"
-            className="pl-9"
-            aria-label="検索"
-          />
-        </div>
-        <Select value={filters.sort} onValueChange={(v) => setFilters({ sort: v as ArticleSort })}>
-          <SelectTrigger className="sm:w-48" aria-label="並び順">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {SORT_OPTIONS.map((o) => (
-              <SelectItem key={o.value} value={o.value}>
-                {o.label}
-              </SelectItem>
+      <div className="border-border/70 bg-card/60 space-y-4 rounded-2xl border p-4 shadow-sm backdrop-blur-sm sm:p-5">
+        <Tabs
+          value={filters.status}
+          onValueChange={(v) => setFilters({ status: v as ArticleStatus | 'all' })}
+        >
+          <TabsList>
+            {STATUS_TABS.map((t) => (
+              <TabsTrigger key={t.value} value={t.value}>
+                {t.label}
+              </TabsTrigger>
             ))}
-          </SelectContent>
-        </Select>
-      </div>
+          </TabsList>
+        </Tabs>
 
-      <TagFilter
-        tags={tagsQuery.data ?? []}
-        selected={filters.tags}
-        onChange={(ids) => setFilters({ tags: ids })}
-        mode={filters.tagMode}
-        onModeChange={(m) => setFilters({ tagMode: m })}
-      />
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="relative flex-1">
+            <Search
+              aria-hidden
+              className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2"
+            />
+            <Input
+              value={filters.q}
+              onChange={(e) => setFilters({ q: e.target.value })}
+              placeholder="タイトル・URL・メモで検索"
+              className="pl-9"
+              aria-label="検索"
+            />
+          </div>
+          <Select
+            value={filters.sort}
+            onValueChange={(v) => setFilters({ sort: v as ArticleSort })}
+          >
+            <SelectTrigger className="sm:w-48" aria-label="並び順">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {SORT_OPTIONS.map((o) => (
+                <SelectItem key={o.value} value={o.value}>
+                  {o.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <TagFilter
+          tags={tagsQuery.data ?? []}
+          selected={filters.tags}
+          onChange={(ids) => setFilters({ tags: ids })}
+          mode={filters.tagMode}
+          onModeChange={(m) => setFilters({ tagMode: m })}
+        />
+      </div>
 
       {articles.isLoading ? (
         <ListSkeleton />
       ) : articles.isError ? (
         <p className="text-destructive text-sm">記事の取得に失敗しました</p>
       ) : articles.data && articles.data.length > 0 ? (
-        <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {articles.data.map((article) => (
             <li key={article.id}>
               <ArticleCard article={article} tags={tagsQuery.data ?? []} />
@@ -211,6 +225,18 @@ function TagFilter({
   );
 }
 
+const STATUS_STYLE: Record<ArticleStatus, string> = {
+  want: 'bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-200',
+  reading: 'bg-primary-soft text-accent-foreground',
+  done: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200',
+};
+
+const PROGRESS_FILL: Record<ArticleStatus, string> = {
+  want: 'bg-gradient-sky',
+  reading: 'bg-gradient-flame',
+  done: 'bg-gradient-leaf',
+};
+
 function ArticleCard({ article, tags }: { article: Article; tags: Tag[] }) {
   const articleTags = article.tagIds
     .map((id) => tags.find((t) => t.id === id))
@@ -226,25 +252,31 @@ function ArticleCard({ article, tags }: { article: Article; tags: Tag[] }) {
     ? formatDistanceToNow(new Date(article.lastReadAt), { addSuffix: true, locale: ja })
     : null;
   return (
-    <Card className="hover:bg-accent/40 h-full transition-colors">
-      <Link
-        href={`/articles/${article.id}`}
-        className="focus:ring-ring block h-full rounded-lg focus:ring-2 focus:outline-none"
-      >
-        <CardHeader className="gap-1">
-          <CardTitle className="line-clamp-2 text-base">{article.title}</CardTitle>
-          <p className="text-muted-foreground truncate text-xs">{article.siteName || host}</p>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <div className="flex items-center gap-2 text-xs">
-            <span className="bg-secondary text-secondary-foreground rounded-full px-2 py-0.5">
+    <Card className="group relative h-full overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-md">
+      <Link href={`/articles/${article.id}`} className="focus-ring block h-full rounded-xl">
+        <CardHeader className="gap-1.5">
+          <div className="flex items-center gap-2">
+            <span
+              className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${STATUS_STYLE[article.status]}`}
+            >
               {STATUS_LABEL[article.status]}
             </span>
-            <span className="font-mono">{article.progress}%</span>
+            <span className="text-muted-foreground truncate text-[11px]">
+              {article.siteName || host || '—'}
+            </span>
           </div>
-          <div className="bg-secondary h-1.5 w-full overflow-hidden rounded-full" aria-hidden>
+          <CardTitle className="group-hover:text-primary line-clamp-2 text-base leading-snug transition-colors">
+            {article.title}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex items-center gap-2 text-xs">
+            <span className="text-muted-foreground">進捗</span>
+            <span className="font-mono font-medium tabular-nums">{article.progress}%</span>
+          </div>
+          <div className="bg-muted relative h-1.5 w-full overflow-hidden rounded-full" aria-hidden>
             <div
-              className="bg-primary h-full transition-all"
+              className={`h-full rounded-full transition-all duration-500 ${PROGRESS_FILL[article.status]}`}
               style={{ width: `${article.progress}%` }}
             />
           </div>
@@ -257,7 +289,7 @@ function ArticleCard({ article, tags }: { article: Article; tags: Tag[] }) {
           ) : null}
         </CardContent>
         <CardFooter className="text-muted-foreground text-xs">
-          {lastRead ? `最終読書: ${lastRead}` : '未読'}
+          {lastRead ? `最終読書 ${lastRead}` : '未読'}
         </CardFooter>
       </Link>
     </Card>
@@ -266,9 +298,9 @@ function ArticleCard({ article, tags }: { article: Article; tags: Tag[] }) {
 
 function ListSkeleton() {
   return (
-    <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3" aria-busy>
+    <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3" aria-busy>
       {Array.from({ length: 6 }).map((_, i) => (
-        <li key={i} className="border-border bg-card h-40 animate-pulse rounded-lg border" />
+        <li key={i} className="border-border/70 bg-card h-44 animate-pulse rounded-xl border" />
       ))}
     </ul>
   );
@@ -276,13 +308,24 @@ function ListSkeleton() {
 
 function EmptyState() {
   return (
-    <div className="border-border flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
-      <p className="text-muted-foreground text-sm">まだ記事がありません。</p>
-      <Button asChild className="mt-4">
-        <Link href="/articles/new">
-          <Plus className="h-4 w-4" aria-hidden /> 最初の記事を追加
-        </Link>
-      </Button>
+    <div className="border-border bg-card/60 relative overflow-hidden rounded-2xl border border-dashed py-16 text-center backdrop-blur-sm">
+      <div className="bg-grid-soft pointer-events-none absolute inset-0 opacity-30" aria-hidden />
+      <div className="relative flex flex-col items-center gap-4">
+        <span className="bg-primary-soft text-primary inline-flex h-14 w-14 items-center justify-center rounded-2xl shadow-sm">
+          <Plus className="h-6 w-6" aria-hidden />
+        </span>
+        <div className="space-y-1">
+          <p className="font-display text-2xl tracking-tight">書棚は、まだ空っぽ。</p>
+          <p className="text-muted-foreground text-sm">
+            気になる記事をひとつ追加して始めましょう。
+          </p>
+        </div>
+        <Button asChild size="lg">
+          <Link href="/articles/new">
+            <Plus className="h-4 w-4" aria-hidden /> 最初の記事を追加
+          </Link>
+        </Button>
+      </div>
     </div>
   );
 }

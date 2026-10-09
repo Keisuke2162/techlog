@@ -67,7 +67,9 @@ export function ArticleDetail({ articleId }: { articleId: string }) {
     <div className="space-y-6">
       <header className="space-y-2">
         <div className="flex flex-wrap items-start justify-between gap-2">
-          <h1 className="text-2xl font-bold tracking-tight">{article.title}</h1>
+          <h1 className="font-display text-3xl leading-tight tracking-tight sm:text-4xl">
+            {article.title}
+          </h1>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" asChild>
               <a href={article.url} target="_blank" rel="noreferrer">

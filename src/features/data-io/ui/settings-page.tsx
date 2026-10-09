@@ -77,7 +77,15 @@ export function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold tracking-tight">設定</h1>
+      <div className="space-y-1">
+        <p className="text-muted-foreground text-xs tracking-widest uppercase">Settings</p>
+        <h1 className="font-display text-4xl leading-tight tracking-tight sm:text-5xl">
+          <span className="text-gradient-flame italic">道具箱</span>
+        </h1>
+        <p className="text-muted-foreground text-sm">
+          データの持ち出し、持ち込み、まっさらにする。
+        </p>
+      </div>
 
       <Card>
         <CardHeader>
