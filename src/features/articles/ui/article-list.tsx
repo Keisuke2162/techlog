@@ -3,17 +3,23 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { parseAsString, parseAsStringEnum, parseAsArrayOf, useQueryStates } from 'nuqs';
-import { Search, Plus, Filter } from 'lucide-react';
+import { Search, Plus, Filter, Pencil, ExternalLink, ChevronDown } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/shared/ui/dropdown-menu';
 import { TagChip } from '@/features/tags/ui/tag-chip';
 import { useTags } from '@/features/tags/ui/hooks';
-import { useArticles } from './hooks';
+import { useArticles, useUpdateArticle } from './hooks';
 import type { Article, ArticleStatus, Tag } from '@/features/articles/domain/types';
 import type { ArticleSort } from '@/shared/repository/types';
-import { STATUS_LABEL } from './status-label';
+import { STATUS_LABEL, STATUS_ORDER } from './status-label';
 import { formatDistanceToNow } from 'date-fns';
 import { ja } from 'date-fns/locale';
 
@@ -236,22 +242,33 @@ function ArticleRow({ article, tags }: { article: Article; tags: Tag[] }) {
   const lastRead = article.lastReadAt
     ? formatDistanceToNow(new Date(article.lastReadAt), { addSuffix: true, locale: ja })
     : null;
+
+  const update = useUpdateArticle();
+  const onChangeStatus = (next: ArticleStatus) => {
+    if (next === article.status) return;
+    update.mutate({ id: article.id, status: next });
+  };
+
   return (
-    <Link
-      href={`/articles/${article.id}`}
-      className="border-border/70 bg-card hover:border-primary/40 focus-visible:ring-ring group flex items-center gap-4 rounded-lg border px-4 py-3 transition-colors focus-visible:ring-2 focus-visible:outline-none"
-    >
-      <span
-        className={`inline-flex shrink-0 items-center rounded border px-1.5 py-0.5 text-[11px] ${STATUS_STYLE[article.status]}`}
+    <div className="border-border/70 bg-card hover:border-primary/40 flex items-center gap-3 rounded-lg border px-3 py-2 transition-colors sm:gap-4 sm:px-4 sm:py-3">
+      <StatusMenu value={article.status} onChange={onChangeStatus} />
+      <a
+        href={article.url}
+        target="_blank"
+        rel="noreferrer"
+        className="focus-visible:ring-ring hover:text-primary group/link min-w-0 flex-1 rounded-sm transition-colors focus-visible:ring-2 focus-visible:outline-none"
       >
-        {STATUS_LABEL[article.status]}
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">{article.title}</p>
+        <p className="flex items-center gap-1.5 text-sm font-medium">
+          <span className="truncate">{article.title}</span>
+          <ExternalLink
+            aria-hidden
+            className="text-muted-foreground h-3 w-3 shrink-0 opacity-0 transition-opacity group-hover/link:opacity-100"
+          />
+        </p>
         <p className="text-muted-foreground mt-0.5 truncate text-xs">
           {article.siteName || host || '—'}
         </p>
-      </div>
+      </a>
       {articleTags.length > 0 ? (
         <div className="hidden shrink-0 flex-wrap gap-1 md:flex">
           {articleTags.slice(0, 3).map((t) => (
@@ -265,7 +282,48 @@ function ArticleRow({ article, tags }: { article: Article; tags: Tag[] }) {
       <span className="text-muted-foreground hidden w-28 shrink-0 text-right text-xs sm:inline">
         {lastRead ?? '未読'}
       </span>
-    </Link>
+      <Link
+        href={`/articles/${article.id}`}
+        aria-label={`${article.title} を編集`}
+        className="focus-visible:ring-ring text-muted-foreground hover:text-foreground hover:bg-accent inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition-colors focus-visible:ring-2 focus-visible:outline-none"
+      >
+        <Pencil className="h-4 w-4" aria-hidden />
+      </Link>
+    </div>
+  );
+}
+
+function StatusMenu({
+  value,
+  onChange,
+}: {
+  value: ArticleStatus;
+  onChange: (next: ArticleStatus) => void;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          aria-label={`ステータス: ${STATUS_LABEL[value]}`}
+          className={`focus-visible:ring-ring inline-flex shrink-0 items-center gap-1 rounded border px-1.5 py-0.5 text-[11px] transition-colors focus-visible:ring-2 focus-visible:outline-none ${STATUS_STYLE[value]}`}
+        >
+          {STATUS_LABEL[value]}
+          <ChevronDown className="h-3 w-3 opacity-60" aria-hidden />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="min-w-28">
+        {STATUS_ORDER.map((s) => (
+          <DropdownMenuItem
+            key={s}
+            onSelect={() => onChange(s)}
+            className={s === value ? 'bg-accent/60' : ''}
+          >
+            {STATUS_LABEL[s]}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 

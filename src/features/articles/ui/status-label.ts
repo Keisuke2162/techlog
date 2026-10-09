@@ -1,8 +1,8 @@
 import type { ArticleStatus } from '@/features/articles/domain/types';
 
 export const STATUS_LABEL: Record<ArticleStatus, string> = {
-  want: '読みたい',
-  reading: '途中',
+  want: 'まだ',
+  reading: '読んでる',
   done: '読んだ',
 };
 
