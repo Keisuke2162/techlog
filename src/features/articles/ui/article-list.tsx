@@ -8,7 +8,6 @@ import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/shared/ui/card';
 import { TagChip } from '@/features/tags/ui/tag-chip';
 import { useTags } from '@/features/tags/ui/hooks';
 import { useArticles } from './hooks';
@@ -135,10 +134,10 @@ export function ArticleList() {
       ) : articles.isError ? (
         <p className="text-destructive text-sm">記事の取得に失敗しました</p>
       ) : articles.data && articles.data.length > 0 ? (
-        <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <ul className="flex flex-col gap-2">
           {articles.data.map((article) => (
             <li key={article.id}>
-              <ArticleCard article={article} tags={tagsQuery.data ?? []} />
+              <ArticleRow article={article} tags={tagsQuery.data ?? []} />
             </li>
           ))}
         </ul>
@@ -223,7 +222,7 @@ const STATUS_STYLE: Record<ArticleStatus, string> = {
   done: 'text-muted-foreground border-border',
 };
 
-function ArticleCard({ article, tags }: { article: Article; tags: Tag[] }) {
+function ArticleRow({ article, tags }: { article: Article; tags: Tag[] }) {
   const articleTags = article.tagIds
     .map((id) => tags.find((t) => t.id === id))
     .filter((t): t is Tag => !!t);
@@ -238,48 +237,43 @@ function ArticleCard({ article, tags }: { article: Article; tags: Tag[] }) {
     ? formatDistanceToNow(new Date(article.lastReadAt), { addSuffix: true, locale: ja })
     : null;
   return (
-    <Card className="hover:border-primary/40 h-full transition-colors">
-      <Link
-        href={`/articles/${article.id}`}
-        className="focus-visible:ring-ring block h-full rounded-lg focus-visible:ring-2 focus-visible:outline-none"
+    <Link
+      href={`/articles/${article.id}`}
+      className="border-border/70 bg-card hover:border-primary/40 focus-visible:ring-ring group flex items-center gap-4 rounded-lg border px-4 py-3 transition-colors focus-visible:ring-2 focus-visible:outline-none"
+    >
+      <span
+        className={`inline-flex shrink-0 items-center rounded border px-1.5 py-0.5 text-[11px] ${STATUS_STYLE[article.status]}`}
       >
-        <CardHeader className="gap-1.5">
-          <div className="flex items-center gap-2 text-[11px]">
-            <span
-              className={`inline-flex items-center rounded border px-1.5 py-0.5 ${STATUS_STYLE[article.status]}`}
-            >
-              {STATUS_LABEL[article.status]}
-            </span>
-            <span className="text-muted-foreground truncate">
-              {article.siteName || host || '—'}
-            </span>
-          </div>
-          <CardTitle className="line-clamp-2 text-sm leading-snug font-medium">
-            {article.title}
-          </CardTitle>
-        </CardHeader>
-        {articleTags.length > 0 ? (
-          <CardContent>
-            <div className="flex flex-wrap gap-1">
-              {articleTags.map((t) => (
-                <TagChip key={t.id} tag={t} />
-              ))}
-            </div>
-          </CardContent>
-        ) : null}
-        <CardFooter className="text-muted-foreground text-xs">
-          {lastRead ? `最終読書 ${lastRead}` : '未読'}
-        </CardFooter>
-      </Link>
-    </Card>
+        {STATUS_LABEL[article.status]}
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium">{article.title}</p>
+        <p className="text-muted-foreground mt-0.5 truncate text-xs">
+          {article.siteName || host || '—'}
+        </p>
+      </div>
+      {articleTags.length > 0 ? (
+        <div className="hidden shrink-0 flex-wrap gap-1 md:flex">
+          {articleTags.slice(0, 3).map((t) => (
+            <TagChip key={t.id} tag={t} />
+          ))}
+          {articleTags.length > 3 ? (
+            <span className="text-muted-foreground text-xs">+{articleTags.length - 3}</span>
+          ) : null}
+        </div>
+      ) : null}
+      <span className="text-muted-foreground hidden w-28 shrink-0 text-right text-xs sm:inline">
+        {lastRead ?? '未読'}
+      </span>
+    </Link>
   );
 }
 
 function ListSkeleton() {
   return (
-    <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3" aria-busy>
-      {Array.from({ length: 6 }).map((_, i) => (
-        <li key={i} className="border-border bg-muted/30 h-28 animate-pulse rounded-lg border" />
+    <ul className="flex flex-col gap-2" aria-busy>
+      {Array.from({ length: 8 }).map((_, i) => (
+        <li key={i} className="border-border bg-muted/30 h-14 animate-pulse rounded-lg border" />
       ))}
     </ul>
   );
