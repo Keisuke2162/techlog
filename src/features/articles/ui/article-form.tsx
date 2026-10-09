@@ -5,6 +5,7 @@ import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Textarea } from '@/shared/ui/textarea';
@@ -12,6 +13,7 @@ import { Label } from '@/shared/ui/label';
 import { TagInput } from '@/features/tags/ui/tag-input';
 import { useTags } from '@/features/tags/ui/hooks';
 import { useAddArticle, useArticles } from './hooks';
+import { useFetchTitle } from './use-fetch-title';
 import { DuplicateUrlError } from '@/features/articles/application/usecases';
 import { useRouter } from 'next/navigation';
 import { normalizeUrl } from '@/shared/lib/normalize-url';
@@ -73,11 +75,37 @@ export function ArticleAddForm({ onDone }: { onDone?: () => void }) {
   );
   const inlineDuplicateId = duplicateId ?? duplicateFromList?.id ?? null;
 
+  const [titleTouched, setTitleTouched] = React.useState(false);
+  const titleFetch = useFetchTitle(url ?? '', { enabled: !inlineDuplicateId });
+  const [appliedForUrl, setAppliedForUrl] = React.useState<string | null>(null);
+  const fetchedTitle = titleFetch.data?.title ?? '';
+  const fetchedSiteName = titleFetch.data?.siteName ?? '';
+  if (
+    titleFetch.data &&
+    !titleTouched &&
+    appliedForUrl !== titleFetch.dataUpdatedAt + ':' + (url ?? '') &&
+    fetchedTitle
+  ) {
+    setAppliedForUrl(titleFetch.dataUpdatedAt + ':' + (url ?? ''));
+    form.setValue('title', fetchedTitle, { shouldValidate: true });
+    if (fetchedSiteName) {
+      form.setValue('siteName', fetchedSiteName);
+    }
+  }
+
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="space-y-1.5">
         <Label htmlFor="url">URL</Label>
-        <Input id="url" placeholder="https://..." {...form.register('url')} autoFocus />
+        <div className="relative">
+          <Input id="url" placeholder="https://..." {...form.register('url')} autoFocus />
+          {titleFetch.isFetching ? (
+            <Loader2
+              className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 animate-spin"
+              aria-label="タイトルを取得中"
+            />
+          ) : null}
+        </div>
         {form.formState.errors.url ? (
           <p className="text-destructive text-sm">{form.formState.errors.url.message}</p>
         ) : null}
@@ -96,7 +124,17 @@ export function ArticleAddForm({ onDone }: { onDone?: () => void }) {
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="title">タイトル</Label>
-        <Input id="title" {...form.register('title')} />
+        <Input
+          id="title"
+          {...form.register('title', {
+            onChange: () => setTitleTouched(true),
+          })}
+        />
+        {titleFetch.isError && !titleTouched ? (
+          <p className="text-muted-foreground text-xs">
+            タイトルの自動取得に失敗しました。手入力してください。
+          </p>
+        ) : null}
         {form.formState.errors.title ? (
           <p className="text-destructive text-sm">{form.formState.errors.title.message}</p>
         ) : null}

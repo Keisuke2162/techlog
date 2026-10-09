@@ -83,6 +83,41 @@ test.describe('TechLog smoke', () => {
     expect(page.url()).toContain('/articles/new');
   });
 
+  test('URL input auto-fills title via /api/fetch-title', async ({ page }) => {
+    await page.route('**/api/fetch-title**', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ title: 'モックされたタイトル', siteName: 'Mock Site' }),
+      });
+    });
+    await page.goto('/articles/new');
+    await page.getByLabel('URL').fill('https://example.com/mock');
+    await expect(page.getByLabel('タイトル')).toHaveValue('モックされたタイトル', {
+      timeout: 10_000,
+    });
+    await expect(page.getByLabel('サイト名 (任意)')).toHaveValue('Mock Site');
+  });
+
+  test('user-typed title is not overwritten by auto-fetch', async ({ page }) => {
+    let callCount = 0;
+    await page.route('**/api/fetch-title**', async (route) => {
+      callCount += 1;
+      await new Promise((r) => setTimeout(r, 300));
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ title: '上書きしてはいけない', siteName: '' }),
+      });
+    });
+    await page.goto('/articles/new');
+    await page.getByLabel('タイトル').fill('手入力タイトル');
+    await page.getByLabel('URL').fill('https://example.com/no-override');
+    await page.waitForTimeout(1500);
+    await expect(page.getByLabel('タイトル')).toHaveValue('手入力タイトル');
+    expect(callCount).toBeGreaterThan(0);
+  });
+
   test('dashboard renders and nav works', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByRole('heading', { name: 'ダッシュボード' })).toBeVisible();
