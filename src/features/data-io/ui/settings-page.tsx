@@ -24,6 +24,12 @@ import {
   type ImportResult,
 } from '@/features/data-io/application/import-export';
 import { SeedButton } from '@/features/dev/seed-button';
+import {
+  BACKGROUND_PRESETS,
+  useBackground,
+  type BackgroundPreset,
+} from '@/shared/providers/background-provider';
+import { Check } from 'lucide-react';
 
 export function SettingsPage() {
   const repo = useRepository();
@@ -78,6 +84,8 @@ export function SettingsPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-xl font-semibold tracking-tight">設定</h1>
+
+      <BackgroundPicker />
 
       <Card>
         <CardHeader>
@@ -231,5 +239,67 @@ export function SettingsPage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+const SWATCH_BG: Record<BackgroundPreset, string> = {
+  paper: 'hsl(40 24% 94%)',
+  mist: 'hsl(220 18% 96%)',
+  stone: 'hsl(30 8% 93%)',
+  sand: 'hsl(35 28% 92%)',
+  sage: 'hsl(140 12% 93%)',
+  snow: 'hsl(0 0% 100%)',
+};
+
+function BackgroundPicker() {
+  const { background, setBackground: apply } = useBackground();
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>背景色</CardTitle>
+        <CardDescription>
+          ライトモードの背景プリセットを選択します。選択はこのブラウザに保存されます。
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div
+          role="radiogroup"
+          aria-label="背景色プリセット"
+          className="grid grid-cols-2 gap-2 sm:grid-cols-3"
+        >
+          {BACKGROUND_PRESETS.map((p) => {
+            const selected = background === p.value;
+            return (
+              <button
+                key={p.value}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                onClick={() => apply(p.value)}
+                className={`focus-visible:ring-ring flex items-center gap-3 rounded-md border p-2.5 text-left transition-colors focus-visible:ring-2 focus-visible:outline-none ${
+                  selected
+                    ? 'border-primary bg-accent/50'
+                    : 'border-border/70 hover:border-primary/40'
+                }`}
+              >
+                <span
+                  aria-hidden
+                  className="border-border/60 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border"
+                  style={{ background: SWATCH_BG[p.value] }}
+                >
+                  {selected ? <Check className="text-primary h-4 w-4" aria-hidden /> : null}
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-medium">{p.label}</span>
+                  <span className="text-muted-foreground block truncate text-xs">
+                    {p.description}
+                  </span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

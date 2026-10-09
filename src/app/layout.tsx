@@ -7,6 +7,7 @@ import { AppNav } from '@/shared/ui/nav';
 import { QueryProvider } from '@/shared/providers/query-provider';
 import { RepositoryProvider } from '@/shared/providers/repository-provider';
 import { ThemeProvider } from '@/shared/providers/theme-provider';
+import { BACKGROUND_INIT_SCRIPT } from '@/shared/providers/background-provider';
 import './globals.css';
 
 const inter = Inter({
@@ -40,6 +41,9 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
       className={`h-full antialiased ${inter.variable} ${notoSansJp.variable} ${jetbrainsMono.variable}`}
       suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: BACKGROUND_INIT_SCRIPT }} />
+      </head>
       <body className="bg-background text-foreground flex min-h-full flex-col">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <QueryProvider>
