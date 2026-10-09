@@ -16,9 +16,6 @@
       "Write",
       "mcp__notion__*"
     ],
-    "deny": [
-      "Bash(git push*)",
-      "Bash(rm -rf /*)"
-    ]
+    "deny": ["Bash(git push*)", "Bash(rm -rf /*)"]
   }
 }

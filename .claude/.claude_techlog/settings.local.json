@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__claude_ai_Notion__notion-fetch",
+      "Bash(mv CLAUDE.md /tmp/CLAUDE_techlog.md)",
+      "Bash(mv .claude /tmp/.claude_techlog)"
+    ]
+  }
+}
