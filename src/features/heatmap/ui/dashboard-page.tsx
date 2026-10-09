@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { format, parseISO } from 'date-fns';
 import { ja } from 'date-fns/locale';
-import { Plus, Loader2 } from 'lucide-react';
+import { Plus, Loader2, ClipboardPaste } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
@@ -25,7 +25,6 @@ import type { Article, ArticleStatus, ReadingLog, Tag } from '@/features/article
 
 export function DashboardPage() {
   const logs = useAllLogs();
-  const reading = useArticles({ status: 'reading' }, 'lastReadAt');
   const all = useArticles({ status: 'all' }, 'addedAt');
   const tags = useTags();
   const [selectedDate, setSelectedDate] = React.useState<string | null>(null);
@@ -78,14 +77,6 @@ export function DashboardPage() {
         </CardContent>
       </Card>
 
-      <ArticleListPreview
-        title="読んでる途中"
-        href="/articles?status=reading"
-        articles={(reading.data ?? []).slice(0, 5)}
-        tags={tags.data ?? []}
-        emptyText="読んでいる記事はありません"
-      />
-
       <QuickAdd />
     </div>
   );
@@ -98,6 +89,23 @@ function QuickAdd() {
   const router = useRouter();
 
   const canSubmit = isHttpUrl(url.trim()) && !submitting;
+
+  const handlePaste = async () => {
+    if (!navigator.clipboard?.readText) {
+      toast.error('このブラウザではペーストを使えません');
+      return;
+    }
+    try {
+      const text = await navigator.clipboard.readText();
+      if (!text) {
+        toast.error('クリップボードが空です');
+        return;
+      }
+      setUrl(text.trim());
+    } catch {
+      toast.error('クリップボードを読み取れませんでした');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -141,10 +149,7 @@ function QuickAdd() {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="text-sm font-medium">URL から「まだ」に追加</CardTitle>
-      </CardHeader>
-      <CardContent>
+      <CardContent className="pt-5">
         <form onSubmit={handleSubmit} className="flex flex-col gap-2 sm:flex-row">
           <div className="relative flex-1">
             <Input
@@ -163,11 +168,21 @@ function QuickAdd() {
               />
             ) : null}
           </div>
-          <Button type="submit" disabled={!canSubmit}>
-            <Plus className="h-4 w-4" aria-hidden /> 追加
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handlePaste}
+              disabled={submitting}
+              aria-label="クリップボードから貼り付け"
+            >
+              <ClipboardPaste className="h-4 w-4" aria-hidden /> ペースト
+            </Button>
+            <Button type="submit" disabled={!canSubmit}>
+              <Plus className="h-4 w-4" aria-hidden /> 追加
+            </Button>
+          </div>
         </form>
-        <p className="text-muted-foreground mt-2 text-xs">タイトルは URL から自動で取得します。</p>
       </CardContent>
     </Card>
   );
@@ -310,60 +325,5 @@ function DayDetails({ date, tags }: { date: string; tags: Tag[] }) {
         })}
       </ul>
     </div>
-  );
-}
-
-function ArticleListPreview({
-  title,
-  href,
-  articles,
-  tags,
-  emptyText,
-}: {
-  title: string;
-  href: string;
-  articles: Article[];
-  tags: Tag[];
-  emptyText: string;
-}) {
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Link href={href} className="text-muted-foreground hover:text-foreground text-xs">
-          すべて見る
-        </Link>
-      </CardHeader>
-      <CardContent>
-        {articles.length === 0 ? (
-          <p className="text-muted-foreground text-sm">{emptyText}</p>
-        ) : (
-          <ul className="divide-border/60 -mx-1 divide-y">
-            {articles.map((a) => {
-              const articleTags = a.tagIds
-                .map((id) => tags.find((t) => t.id === id))
-                .filter((t): t is Tag => !!t);
-              return (
-                <li key={a.id}>
-                  <Link
-                    href={`/articles/${a.id}`}
-                    className="hover:bg-accent/40 block rounded-md px-1 py-2"
-                  >
-                    <p className="line-clamp-1 text-sm">{a.title}</p>
-                    {articleTags.length > 0 ? (
-                      <div className="mt-1 flex flex-wrap gap-1">
-                        {articleTags.slice(0, 3).map((t) => (
-                          <TagChip key={t.id} tag={t} />
-                        ))}
-                      </div>
-                    ) : null}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </CardContent>
-    </Card>
   );
 }
