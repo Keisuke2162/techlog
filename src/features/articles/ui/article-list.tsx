@@ -24,10 +24,10 @@ import { formatDistanceToNow } from 'date-fns';
 import { ja } from 'date-fns/locale';
 
 const STATUS_TABS: Array<{ value: ArticleStatus | 'all'; label: string }> = [
-  { value: 'all', label: 'すべて' },
   { value: 'want', label: STATUS_LABEL.want },
   { value: 'reading', label: STATUS_LABEL.reading },
   { value: 'done', label: STATUS_LABEL.done },
+  { value: 'all', label: 'すべて' },
 ];
 
 const SORT_OPTIONS: Array<{ value: ArticleSort; label: string }> = [
@@ -40,7 +40,7 @@ const statusParser = parseAsStringEnum<ArticleStatus | 'all'>([
   'want',
   'reading',
   'done',
-]).withDefault('all');
+]).withDefault('want');
 const sortParser = parseAsStringEnum<ArticleSort>(['addedAt', 'lastReadAt']).withDefault('addedAt');
 const tagModeParser = parseAsStringEnum<'and' | 'or'>(['and', 'or']).withDefault('and');
 
