@@ -49,14 +49,14 @@ export function DashboardPage() {
 
       <section aria-label="サマリ" className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Stat label="今月" value={monthlyRead} unit="本" />
-        <Stat label="読んだ" value={statusCounts.done} unit="本" href="/articles?status=done" />
+        <Stat label="読了" value={statusCounts.done} unit="本" href="/articles?status=done" />
         <Stat
-          label="読んでる"
+          label="読書中"
           value={statusCounts.reading}
           unit="本"
           href="/articles?status=reading"
         />
-        <Stat label="まだ" value={statusCounts.want} unit="本" href="/articles?status=want" />
+        <Stat label="未読" value={statusCounts.want} unit="本" href="/articles?status=want" />
       </section>
 
       <Card>
@@ -124,7 +124,7 @@ function QuickAdd() {
         status: 'want',
       });
       setUrl('');
-      toast.success('「まだ」に追加しました', {
+      toast.success('「未読」に追加しました', {
         action: {
           label: '開く',
           onClick: () => router.push(`/articles/${article.id}`),
